@@ -42,6 +42,8 @@ def get_school_logo(no):
     else:
         return "Logo not found for the provided number", 404
 
+
+#교내지원사업_창업제도의 get, post메소드
 @app.route('/<int:no>/system', methods=['GET'])
 def get_system_data(no):
     """
@@ -53,6 +55,28 @@ def get_system_data(no):
     else:
         return "System data not found for the provided number", 404
 
+@app.route('/<int:no>/system/ids', methods=['POST'])
+def get_system_data_by_ids(no):
+    # 요청에서 ID 목록을 받음
+    requested_ids = request.json.get('ids', [])
+    if not requested_ids:
+        return jsonify({"error": "No IDs provided"}), 400
+
+    # 시스템 데이터 파일 로드
+    system_path = f'data/oncampus_data/system/{no}.json'
+    if os.path.exists(system_path):
+        with open(system_path, 'r', encoding='utf-8') as file:
+            system_data = json.load(file)
+        
+        # 요청된 ID에 해당하는 데이터만 필터링
+        filtered_data = [item for item in system_data if item.get('id') in requested_ids]
+
+        return jsonify(filtered_data)
+    else:
+        return "System data not found for the provided number", 404
+
+
+#교내지원사업_창업 강의의 get, post 메소드  
 @app.route('/<int:no>/class', methods=['GET'])
 def get_class_data(no):
     """
@@ -64,6 +88,28 @@ def get_class_data(no):
     else:
         return "Class data not found for the provided number", 404
     
+@app.route('/<int:no>/class/ids', methods=['POST'])
+def get_class_data_by_ids(no):
+    # 요청에서 ID 목록을 받음
+    requested_ids = request.json.get('ids', [])
+    if not requested_ids:
+        return jsonify({"error": "No IDs provided"}), 400
+
+    # 클래스 데이터 파일 로드
+    class_path = f'data/oncampus_data/class/{no}.json'
+    if os.path.exists(class_path):
+        with open(class_path, 'r', encoding='utf-8') as file:
+            class_data = json.load(file)
+        
+        # 요청된 ID에 해당하는 데이터만 필터링
+        filtered_data = [item for item in class_data if item.get('id') in requested_ids]
+
+        return jsonify(filtered_data)
+    else:
+        return "Class data not found for the provided number", 404
+    
+
+#교내지원사업_창업 지원 공고의 get, post 메소드    
 @app.route('/<int:no>/notify', methods=['GET'])
 def get_notify_data(no):
     """
@@ -104,9 +150,9 @@ def get_offcampus_data():
     """
     'outschool_gara.json' 파일의 전체 데이터를 반환하는 Flask 라우트
     """
-    response = jsonify(outschool_data)
-    response.headers['Content-Type'] = 'application/json; charset=utf-8'
-    return response
+    json_data = json.dumps(outschool_data, ensure_ascii=False, indent=4)
+    return Response(json_data, mimetype='application/json; charset=utf-8')
+
 
 @app.route('/offcampus/ids', methods=['POST'])
 def get_offcampus_data_by_ids():
@@ -119,6 +165,36 @@ def get_offcampus_data_by_ids():
     filtered_data = [item for item in outschool_data if item.get('id') in requested_ids]
 
     return jsonify(filtered_data)
+
+
+@app.route('/offcampus/filtered', methods=['POST'])
+def get_offcampus_data_filter():
+    # 요청에서 필터링 조건을 받음
+    filter_conditions = request.json
+    supporttype = filter_conditions.get('supporttype', '전체')
+    region = filter_conditions.get('region', '전체')
+    posttarget = filter_conditions.get('posttarget', '전체')  # 이제 문자열로 받음
+    print(filter_conditions)
+
+    # 필터링된 데이터를 저장할 리스트
+    filtered_data = []
+
+    for item in outschool_data:
+        # 각 필터 조건에 대해 "전체"가 아니고, 해당 항목이 조건과 일치하지 않으면 스킵
+        if supporttype != '전체' and item['supporttype'] != supporttype:
+            continue
+        if region != '전체' and item['region'] != region:
+            continue
+        # posttarget이 문자열이므로, item['posttarget'] 리스트에 포함되어 있는지 확인
+        if posttarget != '전체' and posttarget not in item['posttarget']:
+            continue
+        
+        # 모든 조건을 만족하는 경우에만 결과 목록에 추가
+        filtered_data.append(item)
+
+    return jsonify(filtered_data)
+
+
 
 
 #여기서부터 창업지원단 데이터 부분
