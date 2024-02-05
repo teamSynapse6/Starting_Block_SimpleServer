@@ -195,6 +195,22 @@ def get_offcampus_data_filter():
     return jsonify(filtered_data)
 
 
+@app.route('/offcampus/popular', methods=['GET'])
+def get_popular_search_terms():
+    # 인기검색어
+    file_path = 'data/offcampus_data/popular_search.json'
+    
+    # 파일 존재 여부 확인
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            # JSON 파일 로드
+            popular_search_terms = json.load(file)
+            # JSON 데이터를 ensure_ascii=False로 인코딩하여 반환
+            return Response(json.dumps(popular_search_terms, ensure_ascii=False, indent=4), mimetype='application/json; charset=utf-8')
+    else:
+        return jsonify({"error": "File not found"}), 404
+
+
 
 
 #여기서부터 창업지원단 데이터 부분
