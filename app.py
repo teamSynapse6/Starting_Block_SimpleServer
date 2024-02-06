@@ -121,6 +121,7 @@ def get_notify_data(no):
     else:
         return "Notify data not found for the provided number", 404
     
+
 @app.route('/<int:no>/notify/ids', methods=['POST'])
 def get_notify_data_by_ids(no):
     # 요청에서 ID 목록을 받음
@@ -141,6 +142,27 @@ def get_notify_data_by_ids(no):
                         notify_data.append(item)
 
     return jsonify(notify_data)
+
+@app.route('/<int:no>/notify/filtered', methods=['POST'])
+def get_notify_data_filtered(no):
+    # 요청 본문에서 'type' 받기
+    requested_type = request.json.get('type', None)
+
+    notify_path = f'data/oncampus_data/notify/{no}.json'
+    # 파일 존재 확인 및 데이터 로드
+    if os.path.exists(notify_path):
+        with open(notify_path, 'r', encoding='utf-8') as file:
+            notify_data = json.load(file)
+        
+        # 요청된 'type'에 해당하는 데이터 필터링
+        filtered_data = [item for item in notify_data if item.get('type') == requested_type]
+
+        return jsonify(filtered_data)
+    else:
+        return jsonify({"error": "Notify data not found for the provided number"}), 404
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
 #여기서부터 교외지원사업 데이터 부분
@@ -169,30 +191,69 @@ def get_offcampus_data_by_ids():
 
 @app.route('/offcampus/filtered', methods=['POST'])
 def get_offcampus_data_filter():
-    # 요청에서 필터링 조건을 받음
+    # 요청에서 필터링 조건과 정렬 조건을 받음
     filter_conditions = request.json
     supporttype = filter_conditions.get('supporttype', '전체')
     region = filter_conditions.get('region', '전체')
-    posttarget = filter_conditions.get('posttarget', '전체')  # 이제 문자열로 받음
-    print(filter_conditions)
+    posttarget = filter_conditions.get('posttarget', '전체')  # 문자열로 받음
+    sorting = filter_conditions.get('sorting', None)  # 정렬 조건 추가
 
     # 필터링된 데이터를 저장할 리스트
     filtered_data = []
 
     for item in outschool_data:
-        # 각 필터 조건에 대해 "전체"가 아니고, 해당 항목이 조건과 일치하지 않으면 스킵
         if supporttype != '전체' and item['supporttype'] != supporttype:
             continue
         if region != '전체' and item['region'] != region:
             continue
-        # posttarget이 문자열이므로, item['posttarget'] 리스트에 포함되어 있는지 확인
         if posttarget != '전체' and posttarget not in item['posttarget']:
             continue
-        
-        # 모든 조건을 만족하는 경우에만 결과 목록에 추가
         filtered_data.append(item)
 
+    # 정렬 로직
+    if sorting == 'latest':
+        # startdate 기준 오름차순 정렬 후, 동일한 경우 title로 오름차순 정렬
+        filtered_data.sort(key=lambda x: (x['startdate'], x['title']))
+    elif sorting == 'savedLot':
+        # saved 기준 내림차순 정렬 후, 동일한 경우 title로 오름차순 정렬
+        filtered_data.sort(key=lambda x: (-x['saved'], x['title']))
+
     return jsonify(filtered_data)
+
+@app.route('/offcampus/search', methods=['POST'])
+def get_offcampus_data_search():
+    # 요청에서 필터링 조건, 정렬 조건, 그리고 검색 키워드를 받음
+    filter_conditions = request.json
+    supporttype = filter_conditions.get('supporttype', '전체')
+    region = filter_conditions.get('region', '전체')
+    posttarget = filter_conditions.get('posttarget', '전체')  # 문자열로 받음
+    sorting = filter_conditions.get('sorting', None)  # 정렬 조건 추가
+    keyword = filter_conditions.get('keyword', '')  # 검색 키워드 추가
+
+    # 필터링된 데이터를 저장할 리스트
+    filtered_data = []
+
+    for item in outschool_data:
+        if supporttype != '전체' and item['supporttype'] != supporttype:
+            continue
+        if region != '전체' and item['region'] != region:
+            continue
+        if posttarget != '전체' and posttarget not in item['posttarget']:
+            continue
+        # 키워드 검색 조건 추가: title 또는 content에 키워드가 포함되어야 함
+        if keyword and (keyword.lower() not in item['title'].lower() and keyword.lower() not in item['content'].lower()):
+            continue
+        filtered_data.append(item)
+
+    # 정렬 로직
+    if sorting == 'latest':
+        filtered_data.sort(key=lambda x: (x['startdate'], x['title']))
+    elif sorting == 'savedLot':
+        filtered_data.sort(key=lambda x: (-x['saved'], x['title']))
+
+    return jsonify(filtered_data)
+
+
 
 
 @app.route('/offcampus/popular', methods=['GET'])
