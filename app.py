@@ -145,8 +145,9 @@ def get_notify_data_by_ids(no):
 
 @app.route('/<int:no>/notify/filtered', methods=['POST'])
 def get_notify_data_filtered(no):
-    # 요청 본문에서 'type' 받기
+    # 요청 본문에서 'type'과 'sorting' 받기
     requested_type = request.json.get('type', None)
+    sorting = request.json.get('sorting', None)  # 정렬 조건 추가
 
     notify_path = f'data/oncampus_data/notify/{no}.json'
     # 파일 존재 확인 및 데이터 로드
@@ -154,15 +155,57 @@ def get_notify_data_filtered(no):
         with open(notify_path, 'r', encoding='utf-8') as file:
             notify_data = json.load(file)
         
-        # 요청된 'type'에 해당하는 데이터 필터링
-        filtered_data = [item for item in notify_data if item.get('type') == requested_type]
+        # 'type'이 '전체'일 경우 필터링 없이 모든 데이터 반환
+        if requested_type == '전체':
+            filtered_data = notify_data
+        else:
+            # 요청된 'type'에 해당하는 데이터 필터링
+            filtered_data = [item for item in notify_data if item.get('type') == requested_type]
+
+        # 정렬 로직
+        if sorting == 'latest':
+            # startdate 기준 오름차순 정렬 후, 동일한 경우 title로 오름차순 정렬
+            filtered_data.sort(key=lambda x: (x['startdate'], x['title']))
+        elif sorting == 'savedLot':
+            # saved 기준 내림차순 정렬 후, 동일한 경우 title로 오름차순 정렬
+            filtered_data.sort(key=lambda x: (-x['saved'], x['title']))
 
         return jsonify(filtered_data)
     else:
         return jsonify({"error": "Notify data not found for the provided number"}), 404
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.route('/<int:no>/notify/search', methods=['POST'])
+def get_notify_data_search(no):
+    # 요청 본문에서 'type', 'sorting', 'keyword' 받기
+    data = request.json
+    requested_type = data.get('type', '전체')
+    sorting = data.get('sorting', None)
+    keyword = data.get('keyword', '')
+
+    notify_path = f'data/oncampus_data/notify/{no}.json'
+    # 파일 존재 확인 및 데이터 로드
+    if os.path.exists(notify_path):
+        with open(notify_path, 'r', encoding='utf-8') as file:
+            notify_data = json.load(file)
+        
+        # 필터링 로직
+        filtered_data = [
+            item for item in notify_data
+            if (requested_type == '전체' or item['type'] == requested_type) and
+               (keyword.lower() in item['title'].lower() or keyword.lower() in item['content'].lower())
+        ]
+
+        # 정렬 로직
+        if sorting == 'latest':
+            # startdate 기준 오름차순 정렬 후, 동일한 경우 title로 오름차순 정렬
+            filtered_data.sort(key=lambda x: (x['startdate'], x['title']))
+        elif sorting == 'savedLot':
+            # saved 기준 내림차순 정렬 후, 동일한 경우 title로 오름차순 정렬
+            filtered_data.sort(key=lambda x: (-x['saved'], x['title']))
+
+        return jsonify(filtered_data)
+    else:
+        return jsonify({"error": "Notify data not found for the provided number"}), 404
 
 
 #여기서부터 교외지원사업 데이터 부분
