@@ -1,0 +1,14 @@
+{
+    "users": [
+        {
+            "kakaoUserID": 12345678,
+            "nickname": "도레미파",
+            "uuid": "240216001"
+        },
+        {
+            "kakaoUserID": "3342860540",
+            "nickname": "오늘의계절",
+            "uuid": "240216002"
+        }
+    ]
+}

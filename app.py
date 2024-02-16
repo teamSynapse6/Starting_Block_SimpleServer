@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, Response, json, send_from_directory
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -315,8 +316,6 @@ def get_popular_search_terms():
         return jsonify({"error": "File not found"}), 404
 
 
-
-
 #여기서부터 창업지원단 데이터 부분
 
 @app.route('/<int:no>/supportgroup/tablist', methods=['GET'])
@@ -366,6 +365,100 @@ def get_support_group_by_type(no, type_name):
         return Response(json_data, mimetype='application/json; charset=utf-8')
     else:
         return "Support group data not found for the provided number", 404
+    
+
+# 여기서부터 시스템 데이터 부분
+    
+@app.route('/getUserNickName', methods=['POST'])
+def get_user_nickname():
+    # 클라이언트에서 전송한 닉네임 받기
+    requested_nickname = request.json.get('nickname', None)
+    
+    # user_info.json 파일 위치 지정 및 파일 로드
+    user_info_path = 'data/system_data/user_info.json'
+    if os.path.exists(user_info_path):
+        with open(user_info_path, 'r', encoding='utf-8') as file:
+            user_info_data = json.load(file)
+        
+        # 파일 내 닉네임 리스트 검색
+        existing_nicknames = [user['nickname'] for user in user_info_data['users']]
+        if requested_nickname in existing_nicknames:
+            # 닉네임이 리스트에 존재하면 False 반환
+            return jsonify(False)
+        else:
+            # 닉네임이 리스트에 존재하지 않으면 True 반환
+            return jsonify(True)
+    else:
+        return jsonify({"error": "User info file not found"}), 404
+
+
+@app.route('/createuserinfo', methods=['POST'])
+def post_create_userinfo():
+    nickname = request.json.get('nickname')
+    kakaoUserID = request.json.get('kakaoUserID')  # kakaoUserID 받기
+    if not nickname or kakaoUserID is None:
+        return jsonify({"error": "Nickname and kakaoUserID are required"}), 400
+
+    today = datetime.now().strftime('%y%m%d')
+    userinfo_path = 'data/system_data/user_info.json'
+
+    if not os.path.exists(userinfo_path) or os.stat(userinfo_path).st_size == 0:
+        userinfo = {"users": []}
+    else:
+        with open(userinfo_path, 'r', encoding='utf-8') as file:
+            userinfo = json.load(file)
+
+    existing_user = next((user for user in userinfo['users'] if user.get('kakaoUserID') == kakaoUserID), None)
+    if existing_user:
+        # 기존 사용자의 닉네임 업데이트
+        existing_user['nickname'] = nickname
+    else:
+        # 새 UUID 생성 및 저장
+        today_users = [user for user in userinfo['users'] if user['uuid'].startswith(today)]
+        next_number = len(today_users) + 1
+        uuid = f'{today}{next_number:03d}'
+        userinfo['users'].append({"uuid": uuid, "nickname": nickname, "kakaoUserID": kakaoUserID})
+        existing_user = {"uuid": uuid}
+
+    # 파일 업데이트
+    with open(userinfo_path, 'w', encoding='utf-8') as file:
+        json.dump(userinfo, file, ensure_ascii=False, indent=4)
+
+    return jsonify(existing_user)
+
+
+
+
+@app.route('/changeNickName', methods=['POST'])
+def get_change_usernickname():
+    # 클라이언트로부터 uuid와 nickname 받기
+    data = request.json
+    uuid = data.get('uuid')
+    new_nickname = data.get('nickname')
+    
+    # user_info.json 파일 위치 지정 및 로드
+    user_info_path = 'data/system_data/user_info.json'
+    if not os.path.exists(user_info_path):
+        return jsonify({"error": "User info file not found"}), 404
+    
+    with open(user_info_path, 'r', encoding='utf-8') as file:
+        user_info = json.load(file)
+    
+    # UUID에 해당하는 유저 찾기
+    for user in user_info['users']:
+        if user['uuid'] == uuid:
+            # 기존 닉네임을 새로운 닉네임으로 업데이트
+            user['nickname'] = new_nickname
+            break
+    else:
+        return jsonify({"error": "User not found"}), 404
+
+    # 변경된 데이터를 파일에 다시 쓰기
+    with open(user_info_path, 'w', encoding='utf-8') as file:
+        json.dump(user_info, file, ensure_ascii=False, indent=4)
+    
+    return jsonify({"success": True})
+
 
 
 if __name__ == '__main__':
