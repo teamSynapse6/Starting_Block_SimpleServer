@@ -137,7 +137,7 @@
       "target": "대학생,일반인,일반기업,1인 창조기업",
       "agestart": 20,
       "ageend": 45,
-      "supporttype": "기술 개발(R&D)",
+      "supporttype": "경영/사업화/창업",
       "link": "https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?schM=view&pbancSn=167242",
       "region": "전체",
       "posttarget": [
@@ -313,7 +313,7 @@
       "target": "대학생,일반인,일반기업,1인 창조기업",
       "agestart": 20,
       "ageend": 53,
-      "supporttype": "기술 개발(R&D)",
+      "supporttype": "경영/사업화/창업",
       "link": "https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?schM=view&pbancSn=167230",
       "region": "전체",
       "posttarget": [
@@ -456,5 +456,27 @@
       ],
       "saved": 20,
       "classification": "교외사업"
-  }
+  },
+  {
+    "id": 12401020022,
+    "organize": "서울특별시",
+    "title": "24년 1월 스타트업 언론 가라갈",
+    "content": "가라데이터21",
+    "startdate": 20240122,
+    "enddate": 20240601,
+    "target": "대학생,일반인,일반기업,1인 창조기업",
+    "agestart": 20,
+    "ageend": 59,
+    "supporttype": "창업교육",
+    "link": "https://www.k-startup.go.kr/web/contents/bizpbanc-ongoing.do?schM=view&pbancSn=167222",
+    "region": "서울",
+    "posttarget": [
+        "1년미만",
+        "2년미만",
+        "3년미만",
+        "5년미만"
+    ],
+    "saved": 20,
+    "classification": "교외사업"
+}
 ]

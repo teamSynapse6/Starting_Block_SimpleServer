@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, Response, json, send_from_directory
-import os
+import os, random
 from datetime import datetime
 
 app = Flask(__name__)
@@ -110,6 +110,25 @@ def get_class_data_by_ids(no):
         return "Class data not found for the provided number", 404
     
 
+@app.route('/<int:no>/class/roadmapRec', methods=['GET'])
+def getOnCampusRoadmapClassRec(no):
+    class_path = f'data/oncampus_data/class/{no}.json'
+    if os.path.exists(class_path):
+        with open(class_path, 'r', encoding='utf-8') as file:
+            class_data = json.load(file)
+        
+        # 데이터 리스트가 비어있지 않은 경우 무작위 항목 선택
+        if class_data:
+            random_item = random.choice(class_data)
+            # ensure_ascii=False를 설정하여 아스키코드 변환 없이 JSON 응답 생성
+            response = json.dumps(random_item, ensure_ascii=False, indent=4)
+            return Response(response, mimetype="application/json; charset=utf-8")
+        else:
+            return jsonify({"error": "Class data is empty or not found"}), 404
+    else:
+        return jsonify({"error": "Class data not found for the provided number"}), 404
+    
+
 #교내지원사업_창업 지원 공고의 get, post 메소드    
 @app.route('/<int:no>/notify', methods=['GET'])
 def get_notify_data(no):
@@ -207,6 +226,24 @@ def get_notify_data_search(no):
         return jsonify(filtered_data)
     else:
         return jsonify({"error": "Notify data not found for the provided number"}), 404
+    
+@app.route('/<int:no>/notify/roadmapRec', methods=['POST'])
+def getOnCampusRoadmapRec(no):
+    requested_types = request.json.get('types', [])
+    
+    # 교내지원사업 데이터 파일 로드
+    notify_path = f'data/oncampus_data/notify/{no}.json'
+    if os.path.exists(notify_path):
+        with open(notify_path, 'r', encoding='utf-8') as file:
+            notify_data = json.load(file)
+        
+        # 요청된 type에 해당하는 데이터만 필터링
+        filtered_data = [item for item in notify_data if item.get('type') in requested_types]
+
+        return jsonify(filtered_data)
+    else:
+        return jsonify({"error": f"Notify data not found for the provided number {no}"}), 404
+
 
 
 #여기서부터 교외지원사업 데이터 부분
@@ -314,6 +351,44 @@ def get_popular_search_terms():
             return Response(json.dumps(popular_search_terms, ensure_ascii=False, indent=4), mimetype='application/json; charset=utf-8')
     else:
         return jsonify({"error": "File not found"}), 404
+    
+
+@app.route('/offcampus/roadmapRec', methods=['POST'])
+def get_offcampus_roadmap_recommend():
+    data = request.json
+    posttarget_bool = data.get('posttarget', None)
+    region = data.get('region', None)
+    age = data.get('age', None)
+    supporttypes = data.get('supporttype', [])
+
+    filtered_data = []
+    for item in outschool_data:
+        # posttarget 필터링
+        if posttarget_bool is not None:
+            if posttarget_bool:
+                # '예비창업자'를 제외하고 다른 대상이 하나라도 있으면 해당 항목 포함
+                if '예비창업자' in item['posttarget'] and len(item['posttarget']) == 1:
+                    continue
+            else:
+                # '예비창업자'만 포함된 데이터를 찾음
+                if '예비창업자' not in item['posttarget']:
+                    continue
+
+        # region 필터링 - '전체' 또는 지정된 region과 일치할 때 포함
+        if region and item['region'] != '전체' and item['region'] != region:
+            continue
+
+        # age 필터링
+        if age and not (item['agestart'] <= age <= item['ageend']):
+            continue
+
+        # supporttype 필터링
+        if supporttypes and not any(supporttype in item['supporttype'] for supporttype in supporttypes):
+            continue
+
+        filtered_data.append(item)
+
+    return jsonify(filtered_data)
 
 
 #여기서부터 창업지원단 데이터 부분
@@ -425,8 +500,6 @@ def post_create_userinfo():
         json.dump(userinfo, file, ensure_ascii=False, indent=4)
 
     return jsonify(existing_user)
-
-
 
 
 @app.route('/changeNickName', methods=['POST'])
