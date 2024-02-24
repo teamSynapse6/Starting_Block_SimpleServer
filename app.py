@@ -75,6 +75,8 @@ def get_system_data_by_ids(no):
         return jsonify(filtered_data)
     else:
         return "System data not found for the provided number", 404
+    
+
 
 
 #교내지원사업_창업 강의의 get, post 메소드  
@@ -108,6 +110,31 @@ def get_class_data_by_ids(no):
         return jsonify(filtered_data)
     else:
         return "Class data not found for the provided number", 404
+
+
+@app.route('/<int:no>/system/roadmapRec', methods=['POST'])
+def getOnCampusRoadmapSystemRec(no):
+    # 클라이언트로부터 받은 type 배열
+    requested_types = request.json.get('type', [])
+    
+    # 시스템 데이터 파일 로드
+    system_path = f'data/oncampus_data/system/{no}.json'
+    if os.path.exists(system_path):
+        with open(system_path, 'r', encoding='utf-8') as file:
+            system_data = json.load(file)
+        
+        # 요청된 type 배열과 일치하는 항목 필터링
+        matching_items = [item for item in system_data if item.get('type') in requested_types]
+
+        # 일치하는 항목이 있을 경우 무작위로 하나 선택하여 반환
+        if matching_items:
+            random_item = random.choice(matching_items)
+            return jsonify(random_item)
+        else:
+            return jsonify({"error": "No matching system data found"}), 404
+    else:
+        return jsonify({"error": f"System data not found for the provided number {no}"}), 404
+
     
 
 @app.route('/<int:no>/class/roadmapRec', methods=['GET'])
@@ -532,6 +559,23 @@ def get_change_usernickname():
     
     return jsonify({"success": True})
 
+#Q&A 메소드
+@app.route('/question/<question_id>', methods=['GET'])
+def get_question_data(question_id):
+    # 파일 경로 조합
+    file_path = os.path.join('Q&A/question_data', f'{question_id}q.json')
+    
+    # 파일 존재 여부 확인 및 데이터 로드
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            question_data = json.load(file)
+            # ensure_ascii=False를 설정하여 아스키 코드 변환 없이 JSON 응답 생성
+            response = json.dumps(question_data, ensure_ascii=False, indent=4)
+            return Response(response, mimetype="application/json; charset=utf-8"), 200
+    else:
+        # 에러 메시지도 아스키 코드 변환 없이 반환
+        error_response = json.dumps({"error": "Question data not found"}, ensure_ascii=False)
+        return Response(error_response, mimetype="application/json; charset=utf-8"), 404
 
 
 if __name__ == '__main__':

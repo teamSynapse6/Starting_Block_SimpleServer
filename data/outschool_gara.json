@@ -21,7 +21,8 @@
           "7년미만"
       ],
       "saved": 1,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020002,
@@ -40,7 +41,8 @@
           "7년미만"
       ],
       "saved": 2,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020003,
@@ -59,7 +61,8 @@
           "10년미만"
       ],
       "saved": 3,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020004,
@@ -81,7 +84,8 @@
           "5년미만"
       ],
       "saved": 4,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020005,
@@ -103,7 +107,8 @@
           "5년미만"
       ],
       "saved": 5,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020006,
@@ -125,7 +130,8 @@
           "5년미만"
       ],
       "saved": 6,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020007,
@@ -147,7 +153,8 @@
           "5년미만"
       ],
       "saved": 4,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020008,
@@ -169,7 +176,8 @@
           "5년미만"
       ],
       "saved": 7,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020009,
@@ -191,7 +199,8 @@
           "5년미만"
       ],
       "saved": 8,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020010,
@@ -213,7 +222,8 @@
           "5년미만"
       ],
       "saved": 9,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020011,
@@ -235,7 +245,8 @@
           "5년미만"
       ],
       "saved": 10,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020012,
@@ -257,7 +268,8 @@
           "5년미만"
       ],
       "saved": 11,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020013,
@@ -279,7 +291,8 @@
           "5년미만"
       ],
       "saved": 12,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020014,
@@ -301,7 +314,8 @@
           "5년미만"
       ],
       "saved": 13,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020015,
@@ -323,7 +337,8 @@
           "5년미만"
       ],
       "saved": 14,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020016,
@@ -345,7 +360,8 @@
           "5년미만"
       ],
       "saved": 15,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020017,
@@ -367,7 +383,8 @@
           "5년미만"
       ],
       "saved": 16,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020018,
@@ -389,7 +406,8 @@
           "5년미만"
       ],
       "saved": 17,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020019,
@@ -411,7 +429,8 @@
           "5년미만"
       ],
       "saved": 18,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020020,
@@ -433,7 +452,8 @@
           "5년미만"
       ],
       "saved": 19,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
       "id": 12401020021,
@@ -455,7 +475,8 @@
           "5년미만"
       ],
       "saved": 20,
-      "classification": "교외사업"
+      "classification": "교외사업",
+      "contact": "yoochul89@naver.com"
   },
   {
     "id": 12401020022,
@@ -477,6 +498,7 @@
         "5년미만"
     ],
     "saved": 20,
-    "classification": "교외사업"
+    "classification": "교외사업",
+    "contact": "yoochul89@naver.com"
 }
 ]
