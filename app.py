@@ -578,5 +578,86 @@ def get_question_data(question_id):
         return Response(error_response, mimetype="application/json; charset=utf-8"), 404
 
 
+# 질문 생성 및 업데이트 메소드
+def update_question_data(file_path, new_data):
+    if os.path.exists(file_path):
+        with open(file_path, 'r+', encoding='utf-8') as file:
+            data = json.load(file)
+            data.append(new_data)
+            file.seek(0)
+            json.dump(data, file, ensure_ascii=False, indent=4)
+            file.truncate()
+    else:
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump([new_data], file, ensure_ascii=False, indent=4)
+
+@app.route('/question/<question_id>/write', methods=['POST'])
+def write_question_data(question_id):
+    question_text = request.json.get('question')
+    for_contact = request.json.get('forContact')
+    user_uuid = request.json.get('uuid')
+    user_name = request.json.get('nickname')
+    # 클라이언트로부터 받은 profileNum 값을 처리
+    profile_num = request.json.get('profileNum', 1)  # 기본값을 1로 설정
+
+    # 파일 경로 조합
+    file_path = os.path.join('Q&A/question_data', f'{question_id}q.json')
+    
+    # 새로운 qid 생성
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            last_qid = data[-1]['qid'] if data else f'{question_id}q000'
+            qid_num = int(last_qid[-3:]) + 1  # 마지막 번호 + 1
+    else:
+        qid_num = 1  # 파일이 없으면 첫 번째 질문
+    
+    qid = f'{question_id}q{qid_num:03d}'
+    
+    # 현재 날짜
+    today = datetime.now().strftime('%y%m%d')
+    
+    # 새로운 질문 데이터 생성
+    new_question = {
+        "userUUID": user_uuid,
+        "userName": user_name,
+        "qid": qid,
+        "question": question_text,
+        "date": today,
+        "forContact": for_contact,
+        "like": 0,
+        "answerCount": 0,
+        "contactAnswer": False,
+        "profileNum": profile_num  # 새로운 필드 추가
+    }
+    
+    # 데이터 파일 업데이트
+    update_question_data(file_path, new_question)
+    
+    # 생성된 qid 반환
+    return jsonify({"qid": qid})
+
+@app.route('/questionbyqid/<qid>', methods=['GET'])
+def get_question_data_by_qid(qid):
+    # 파일명에서 question_id 추출 (qid에서 마지막 'q'와 숫자 부분 제거)
+    question_id = qid[:-4]  # '12401020001q002'의 경우 '12401020001' 추출
+    file_name = f"{question_id}q.json"
+    file_path = os.path.join('Q&A/question_data', file_name)
+    
+    # 파일 존재 여부 확인 및 데이터 로드
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            questions = json.load(file)
+            # qid와 일치하는 질문 찾기
+            question_data = next((item for item in questions if item['qid'] == qid), None)
+            if question_data:
+                # ensure_ascii=False를 설정하여 아스키 코드 변환 없이 JSON 응답 생성
+                response = json.dumps(question_data, ensure_ascii=False, indent=4)
+                return Response(response, mimetype="application/json; charset=utf-8")
+            else:
+                return jsonify({"error": "Question with given qid not found"}), 404
+    else:
+        return jsonify({"error": "Question data file not found"}), 404
+
 if __name__ == '__main__':
     app.run(debug=True)
