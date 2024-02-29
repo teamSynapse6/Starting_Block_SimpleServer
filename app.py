@@ -494,12 +494,14 @@ def get_user_nickname():
         return jsonify({"error": "User info file not found"}), 404
 
 
+from flask import Response
+
 @app.route('/createuserinfo', methods=['POST'])
 def post_create_userinfo():
     nickname = request.json.get('nickname')
     kakaoUserID = request.json.get('kakaoUserID')  # kakaoUserID 받기
     if not nickname or kakaoUserID is None:
-        return jsonify({"error": "Nickname and kakaoUserID are required"}), 400
+        return Response("Nickname and kakaoUserID are required", status=400)
 
     today = datetime.now().strftime('%y%m%d')
     userinfo_path = 'data/system_data/user_info.json'
@@ -514,19 +516,21 @@ def post_create_userinfo():
     if existing_user:
         # 기존 사용자의 닉네임 업데이트
         existing_user['nickname'] = nickname
+        uuid = existing_user['uuid']  # 기존 사용자의 uuid 사용
     else:
         # 새 UUID 생성 및 저장
         today_users = [user for user in userinfo['users'] if user['uuid'].startswith(today)]
         next_number = len(today_users) + 1
         uuid = f'{today}{next_number:03d}'
         userinfo['users'].append({"uuid": uuid, "nickname": nickname, "kakaoUserID": kakaoUserID})
-        existing_user = {"uuid": uuid}
 
     # 파일 업데이트
     with open(userinfo_path, 'w', encoding='utf-8') as file:
         json.dump(userinfo, file, ensure_ascii=False, indent=4)
 
-    return jsonify(existing_user)
+    # 수정된 부분: 생성되거나 업데이트된 사용자의 uuid 값만을 반환
+    return Response(uuid, mimetype='text/plain')
+
 
 
 @app.route('/changeNickName', methods=['POST'])
