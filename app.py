@@ -347,22 +347,31 @@ def post_create_userinfo():
     nickname = request.json.get('nickname')
     kakaoUserID = request.json.get('kakaoUserID')
     if not nickname or kakaoUserID is None:
-        return Response("Nickname and kakaoUserID are required", status=400)
+        return jsonify({"error": "Nickname and kakaoUserID are required"}), 400
+
     userinfo_path = os.path.join(BASE_DIR, 'data', 'system_data', 'user_info.json')
     if os.path.exists(userinfo_path) and os.stat(userinfo_path).st_size != 0:
         with open(userinfo_path, 'r', encoding='utf-8') as file:
             userinfo = json.load(file)
     else:
         userinfo = {"users": []}
+
     existing_user = next((user for user in userinfo['users'] if user.get('kakaoUserID') == kakaoUserID), None)
     if existing_user:
         existing_user['nickname'] = nickname
+        user_uuid = existing_user['uuid']  # 기존 사용자의 uuid를 사용
     else:
-        uuid = f"{datetime.now().strftime('%y%m%d')}{len(userinfo['users'])+1:03d}"
-        userinfo['users'].append({"uuid": uuid, "nickname": nickname, "kakaoUserID": kakaoUserID})
+        # 새로운 uuid 생성
+        user_uuid = f"{datetime.now().strftime('%y%m%d')}{len(userinfo['users'])+1:03d}"
+        userinfo['users'].append({"uuid": user_uuid, "nickname": nickname, "kakaoUserID": kakaoUserID})
+    
+    # 파일 업데이트
     with open(userinfo_path, 'w', encoding='utf-8') as file:
         json.dump(userinfo, file, ensure_ascii=False, indent=4)
-    return Response(uuid if existing_user else userinfo['users'][-1]['uuid'], mimetype='text/plain')
+
+    # 수정된 부분: JSON 형태로 uuid를 반환
+    return jsonify({'uuid': user_uuid})
+
 
 @app.route('/changeNickName', methods=['POST'])
 def get_change_usernickname():
