@@ -465,5 +465,5 @@ def get_question_data_by_qid(qid):
     else:
         return jsonify({"error": "Question data file not found"}), 404
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == '__main__':  
+   app.run('0.0.0.0', port=5002, debug=True)
